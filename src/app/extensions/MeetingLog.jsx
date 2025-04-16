@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   Button,
   Flex,
-  Input,
   Select,
   TextArea,
   MultiSelect,
@@ -94,7 +93,6 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
     firstName: user.firstName,
     lastName: user.lastName,
   };
-
 
   const fetchContacts = async () => {
     const { response } = await runServerless({
