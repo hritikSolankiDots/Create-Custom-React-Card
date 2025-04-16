@@ -79,12 +79,22 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
     date: null,
     time: getCurrentTime(),
     duration: "15",
-    description: "",
+    description: null,
     action: "logMeeting",
   });
 
   const [contacts, setContacts] = useState([]);
   const [formErrors, setFormErrors] = useState({});
+  let userPayload = null;
+  const user = context.user;
+
+  userPayload = {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+  };
+
 
   const fetchContacts = async () => {
     const { response } = await runServerless({
@@ -135,9 +145,19 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
     try {
       const { response } = await runServerless({
         name: "MeetingLog",
-        parameters: formData,
+        parameters: { ...formData, user: userPayload },
       });
       sendAlert({ message: response });
+      setFormData({
+        attendees: [],
+        outcome: "",
+        date: null,
+        time: getCurrentTime(),
+        duration: "15",
+        description: null,
+        action: "logMeeting",
+      });
+      fetchContacts();
     } catch (error) {
       sendAlert({ message: `Error: ${error.message}`, type: "danger" });
     }

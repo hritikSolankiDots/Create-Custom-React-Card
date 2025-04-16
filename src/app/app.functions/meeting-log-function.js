@@ -38,7 +38,8 @@ function combineDateTime(dateValue, timeStr) {
 exports.main = async (context = {}) => {
   const HUBSPOT_API_BASE = 'https://api.hubapi.com';
   const ACCESS_TOKEN = process.env.PRIVATE_APP_ACCESS_TOKEN;
-  const { action, text, ...params } = context.parameters;
+  const { user, action, text, ...params } = await context?.parameters;
+
   try {
     if (action === 'fetchContact') {
       const contact = await fetchContact(params.contactId, ACCESS_TOKEN, HUBSPOT_API_BASE);
@@ -46,7 +47,7 @@ exports.main = async (context = {}) => {
     }
 
     if (action === 'logMeeting') {
-      const message = await logMeeting(params, ACCESS_TOKEN, HUBSPOT_API_BASE);
+      const message = await logMeeting(params, ACCESS_TOKEN, HUBSPOT_API_BASE, user);
       return message;
     }
 
@@ -120,7 +121,8 @@ async function fetchContact(contactId, ACCESS_TOKEN, HUBSPOT_API_BASE) {
 async function logMeeting(
   { attendees, outcome, date, time, duration, description },
   ACCESS_TOKEN,
-  HUBSPOT_API_BASE
+  HUBSPOT_API_BASE,
+  user
 ) {
 
   try {
@@ -160,7 +162,7 @@ async function logMeeting(
     // Build the meeting properties following the HubSpot meeting properties.
     const properties = {
       hs_timestamp: String(startTimestamp),
-      hs_meeting_title: `Meeting (${outcome})`,
+      hs_meeting_title: `Logged by ${user?.firstName} ${user?.lastName}`,
       hubspot_owner_id: "",
       hs_meeting_body: description || '',
       hs_internal_meeting_notes: "",
