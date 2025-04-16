@@ -1,0 +1,12 @@
+{
+  "type": "crm-card",
+  "data": {
+    "title": "Create Line Item",
+    "uid": "deal_line_items_card",
+    "location": "crm.record.tab",
+    "module": {
+      "file": "DealLineItems.jsx"
+    },
+    "objectTypes": [{ "name": "deals" }]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "Get started App",
+  "description": "Private app with multiple CRM UI extensions.",
+  "uid": "get_started_app",
+  "scopes": [
+    "crm.objects.contacts.read",
+    "crm.objects.contacts.write",
+    "crm.objects.deals.read",
+    "crm.objects.deals.write",
+    "crm.objects.line_items.read",
+    "crm.objects.line_items.write"
+  ],
+  "public": false,
+  "extensions": {
+    "crm": {
+      "cards": [
+        {
+          "file": "extensions/example-card.json"
+        },
+        {
+          "file": "extensions/deal-line-items-card.json"
+        },
+        {
+          "file": "extensions/new-deal-line-items-card.json"
+        },
+        {
+          "file": "extensions/meeting-log-card.json"
+        }
+      ]
+    }
+  },
+  "webhooks": {
+    "file": "./webhooks/webhooks.json"
+  }
+}

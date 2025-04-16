@@ -1,0 +1,12 @@
+{
+  "type": "crm-card",
+  "data": {
+    "title": "Meeting Log",
+    "uid": "meeting_log_card",
+    "location": "crm.record.tab",
+    "module": {
+      "file": "MeetingLog.jsx"
+    },
+    "objectTypes": [{ "name": "contacts" }]
+  }
+}

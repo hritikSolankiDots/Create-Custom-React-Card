@@ -1,0 +1,20 @@
+{
+  "appFunctions": {
+    "myFunc": {
+      "file": "example-function.js",
+      "secrets": []
+    },
+    "addLineItem": {
+      "file": "add-line-item-function.js",
+      "secrets": []
+    },
+    "newAddLineItem": {
+      "file": "new-add-line-item-function.js",
+      "secrets": []
+    },
+    "MeetingLog": { 
+      "file": "meeting-log-function.js",
+      "secrets": []
+    }
+  }
+}
