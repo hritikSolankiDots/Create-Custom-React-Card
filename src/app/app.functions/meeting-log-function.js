@@ -1,14 +1,46 @@
 const axios = require('axios');
 
+function combineDateTime(dateValue, timeStr) {
+  let dateObj;
 
+  // If dateValue is a string, try to create a Date from it.
+  if (typeof dateValue === 'string') {
+    dateObj = new Date(dateValue);
+    if (isNaN(dateObj.getTime())) {
+      throw new Error(`Invalid date string provided: ${dateValue}`);
+    }
+  }
+  // If dateValue is already a Date object, clone it.
+  else if (dateValue instanceof Date) {
+    dateObj = new Date(dateValue.getTime());
+  } else {
+    throw new Error(`Invalid date value. Received type ${typeof dateValue}`);
+  }
+
+  // Parse the time string which should be in "HH:mm" format.
+  if (typeof timeStr !== 'string') {
+    throw new Error(`Invalid time format. Expected string, received ${typeof timeStr}`);
+  }
+
+  const timeParts = timeStr.split(":");
+  if (timeParts.length !== 2) {
+    throw new Error(`Time string is not in the expected "HH:mm" format: ${timeStr}`);
+  }
+
+  const [hours, minutes] = timeParts.map(Number);
+  if (isNaN(hours) || isNaN(minutes)) {
+    throw new Error(`Invalid numeric time values extracted from: ${timeStr}`);
+  }
+
+  dateObj.setHours(hours, minutes, 0, 0);
+  return dateObj;
+}
 exports.main = async (context = {}) => {
   const HUBSPOT_API_BASE = 'https://api.hubapi.com';
   const ACCESS_TOKEN = process.env.PRIVATE_APP_ACCESS_TOKEN;
   const { action, text, ...params } = context.parameters;
-
   try {
     if (action === 'fetchContact') {
-
       const contact = await fetchContact(params.contactId, ACCESS_TOKEN, HUBSPOT_API_BASE);
       return contact;
     }
@@ -83,37 +115,90 @@ async function fetchContact(contactId, ACCESS_TOKEN, HUBSPOT_API_BASE) {
   }
 }
 
-
 // Log a meeting engagement
-async function logMeeting({ attendees, outcome, date, time, duration, description, contactId }, ACCESS_TOKEN, HUBSPOT_API_BASE) {
-  const startTime = new Date(`${date}T${time}`).getTime();
-  const endTime = startTime + parseInt(duration) * 60000;
 
-  const url = `${HUBSPOT_API_BASE}/engagements/v1/engagements`;
+async function logMeeting(
+  { attendees, outcome, date, time, duration, description },
+  ACCESS_TOKEN,
+  HUBSPOT_API_BASE
+) {
 
-  const payload = {
-    engagement: {
-      active: true,
-      type: 'MEETING',
-      timestamp: startTime,
-    },
-    associations: {
-      contactIds: [contactId],
-    },
-    metadata: {
-      startTime,
-      endTime,
-      title: `Meeting with ${attendees}`,
-    },
-    body: description,
-  };
+  try {
+    // Combine date and time safely.
+    const parsedDate =
+      typeof date === "object" && date.year && date.month && date.date
+        ? new Date(date.year, date.month - 1, date.date)
+        : date;
+    const startDateTime = combineDateTime(parsedDate, time);
+    const startTimestamp = startDateTime.getTime();
+    const endTimestamp = startTimestamp + parseInt(duration, 10) * 60000;
+    const outcomeMap = {
+      "Scheduled": "SCHEDULED",
+      "Completed": "COMPLETED",
+      "Rescheduled": "RESCHEDULED",
+      "No Show": "NO_SHOW",
+      "Canceled": "CANCELED",
+    };
 
-  await axios.post(url, payload, {
-    headers: {
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-  });
+    const mappedOutcome = outcomeMap[outcome];
+    if (!mappedOutcome) {
+      throw new Error(`Invalid meeting outcome: ${outcome}`);
+    }
 
-  return 'Meeting successfully logged!';
+
+    // Build associations to attach all attendees (contact IDs).
+    const associations = attendees.map((contactId) => ({
+      to: { id: contactId },
+      types: [
+        {
+          associationCategory: 'HUBSPOT_DEFINED',
+          associationTypeId: 200,
+        },
+      ],
+    }));
+
+    // Build the meeting properties following the HubSpot meeting properties.
+    const properties = {
+      hs_timestamp: String(startTimestamp),
+      hs_meeting_title: `Meeting (${outcome})`,
+      hubspot_owner_id: "",
+      hs_meeting_body: description || '',
+      hs_internal_meeting_notes: "",
+      hs_meeting_external_url: "",
+      hs_meeting_location: "",
+      hs_meeting_start_time: String(startTimestamp),
+      hs_meeting_end_time: String(endTimestamp),
+      hs_meeting_outcome: mappedOutcome,
+      hs_attachment_ids: ""
+    };
+
+    // Create one meeting record with all associations.
+    const inputs = [
+      {
+        associations,
+        properties,
+      },
+    ];
+
+    const payload = { inputs };
+
+    // Call the HubSpot CRM v3 batch create endpoint.
+    const response = await axios.post(
+      `${HUBSPOT_API_BASE}/crm/v3/objects/meetings/batch/create`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return "Meetings successfully created!";
+  } catch (error) {
+    console.log("Error creating meeting(s):", error);
+    throw new Error(
+      error.response?.data?.message ||
+      "Failed to create meeting(s). Please check data and try again."
+    );
+  }
 }

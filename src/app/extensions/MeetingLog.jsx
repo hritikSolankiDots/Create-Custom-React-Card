@@ -80,10 +80,12 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
     time: getCurrentTime(),
     duration: "15",
     description: "",
+    action: "logMeeting",
   });
 
   const [contacts, setContacts] = useState([]);
-  console.log(formData, "formData");
+  const [formErrors, setFormErrors] = useState({});
+
   const fetchContacts = async () => {
     const { response } = await runServerless({
       name: "MeetingLog",
@@ -108,6 +110,28 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
   };
 
   const handleLogMeeting = async () => {
+    const errors = {};
+
+    if (!formData.attendees || formData.attendees.length === 0) {
+      errors.attendees = "Please select at least one attendee.";
+    }
+    if (!formData.outcome) {
+      errors.outcome = "Meeting outcome is required.";
+    }
+    if (!formData.date) {
+      errors.date = "Date is required.";
+    }
+    if (!formData.time) {
+      errors.time = "Time is required.";
+    }
+    if (!formData.duration) {
+      errors.duration = "Duration is required.";
+    }
+
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length > 0) return;
+
     try {
       const { response } = await runServerless({
         name: "MeetingLog",
@@ -129,6 +153,7 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
           name="attendees"
           required={true}
           onChange={(value) => handleChange("attendees", value)}
+          validationMessage={formErrors.attendees}
           options={contacts.map((contact) => ({
             label: `${contact.firstname} ${contact.lastname}`,
             value: contact.objectId,
@@ -139,6 +164,7 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
           placeholder="Select meeting outcome"
           value={formData.outcome}
           onChange={(value) => handleChange("outcome", value)}
+          validationMessage={formErrors.outcome}
           options={[
             { value: "Completed", label: "Completed" },
             { value: "Scheduled", label: "Scheduled" },
@@ -153,8 +179,9 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
         <DateInput
           label="Date"
           name="date"
-          format="ll" // or use "YYYY-MM-DD" if you need to keep a standard format
+          format="ll"
           value={formData.date}
+          validationMessage={formErrors.date}
           onChange={(value) => handleChange("date", value)}
         />
 
@@ -162,12 +189,14 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
           label="Time"
           placeholder="Select time"
           value={formData.time}
+          validationMessage={formErrors.time}
           onChange={(value) => handleChange("time", value)}
           options={generateTimeOptions()}
         />
         <Select
           label="Duration"
           value={formData.duration}
+          validationMessage={formErrors.duration}
           onChange={(value) => handleChange("duration", value)}
           options={generateDurationOptions()}
         />
