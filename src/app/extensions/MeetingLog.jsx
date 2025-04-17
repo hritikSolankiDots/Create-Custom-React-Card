@@ -74,16 +74,20 @@ hubspot.extend(({ context, runServerlessFunction, actions }) => (
 const MeetingLog = ({ context, runServerless, sendAlert }) => {
   const [formData, setFormData] = useState({
     attendees: [],
+    dealId: null,
     outcome: "",
     date: null,
     time: getCurrentTime(),
     duration: "15",
     description: null,
     action: "logMeeting",
+    contactId: context.crm.objectId,
   });
 
   const [contacts, setContacts] = useState([]);
+  const [associatedDeals, setAssociatedDeals] = useState([]);
   const [formErrors, setFormErrors] = useState({});
+
   let userPayload = null;
   const user = context.user;
 
@@ -103,14 +107,30 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
       },
     });
     setContacts(response);
-    const main = response.find((c) => c.isMain);
-    if (main) {
-      setFormData((prev) => ({ ...prev, attendees: [main.objectId] }));
-    }
+
+    setFormData((prev) => ({
+      ...prev,
+      attendees: response.map((c) => c.id),
+    }));
+  };
+
+  const fetchDeals = async () => {
+    const { response } = await runServerless({
+      name: "MeetingLog",
+      parameters: {
+        action: "fetchDeals",
+        contactId: context.crm.objectId,
+      },
+    });
+    setAssociatedDeals(response);
   };
 
   useEffect(() => {
     fetchContacts();
+  }, []);
+
+  useEffect(() => {
+    fetchDeals();
   }, []);
 
   const handleChange = (field, value) => {
@@ -148,12 +168,14 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
       sendAlert({ message: response });
       setFormData({
         attendees: [],
+        dealId: null,
         outcome: "",
         date: null,
         time: getCurrentTime(),
         duration: "15",
         description: null,
         action: "logMeeting",
+        contactId: context.crm.objectId,
       });
       fetchContacts();
     } catch (error) {
@@ -163,63 +185,69 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
 
   return (
     <Flex direction="column" wrap="wrap" gap="small" justify="between">
-      <Flex direction="row" wrap="nowrap" gap="extra-small" justify="between">
-        <MultiSelect
-          value={formData.attendees}
-          placeholder="Select Attendees"
-          label="Attendees"
-          name="attendees"
-          required={true}
-          onChange={(value) => handleChange("attendees", value)}
-          validationMessage={formErrors.attendees}
-          options={contacts.map((contact) => ({
-            label: `${contact.firstname} ${contact.lastname}`,
-            value: contact.objectId,
-          }))}
-        />
-        <Select
-          label="Outcome"
-          placeholder="Select meeting outcome"
-          value={formData.outcome}
-          onChange={(value) => handleChange("outcome", value)}
-          validationMessage={formErrors.outcome}
-          options={[
-            { value: "Completed", label: "Completed" },
-            { value: "Scheduled", label: "Scheduled" },
-            { value: "Rescheduled", label: "Rescheduled" },
-            { value: "No Show", label: "No Show" },
-            { value: "Canceled", label: "Canceled" },
-          ]}
-        />
-      </Flex>
+      <MultiSelect
+        value={formData.attendees}
+        placeholder="Select Attendees"
+        label="Attendees"
+        name="attendees"
+        required={true}
+        onChange={(value) => handleChange("attendees", value)}
+        validationMessage={formErrors.attendees}
+        options={contacts.map((contact) => ({
+          label: `${contact.name}`,
+          value: contact.id,
+        }))}
+        readOnly
+      />
+      <Select
+        label="Deal"
+        placeholder="Select Deal"
+        value={formData.dealId}
+        onChange={(value) => handleChange("dealId", value)}
+        validationMessage={formErrors.dealId}
+        options={associatedDeals.map((deal) => ({
+          label: `${deal.dealname}`,
+          value: deal.dealId,
+        }))}
+      />
+      <Select
+        label="Outcome"
+        placeholder="Select meeting outcome"
+        value={formData.outcome}
+        onChange={(value) => handleChange("outcome", value)}
+        validationMessage={formErrors.outcome}
+        options={[
+          { value: "Completed", label: "Completed" },
+          { value: "Scheduled", label: "Scheduled" },
+          { value: "Rescheduled", label: "Rescheduled" },
+          { value: "No Show", label: "No Show" },
+          { value: "Canceled", label: "Canceled" },
+        ]}
+      />
 
-      <Flex direction="row" wrap="nowrap" gap="extra-small" justify="between">
-        <DateInput
-          label="Date"
-          name="date"
-          format="ll"
-          value={formData.date}
-          validationMessage={formErrors.date}
-          onChange={(value) => handleChange("date", value)}
-        />
-
-        <Select
-          label="Time"
-          placeholder="Select time"
-          value={formData.time}
-          validationMessage={formErrors.time}
-          onChange={(value) => handleChange("time", value)}
-          options={generateTimeOptions()}
-        />
-        <Select
-          label="Duration"
-          value={formData.duration}
-          validationMessage={formErrors.duration}
-          onChange={(value) => handleChange("duration", value)}
-          options={generateDurationOptions()}
-        />
-      </Flex>
-
+      <DateInput
+        label="Date"
+        name="date"
+        format="ll"
+        value={formData.date}
+        validationMessage={formErrors.date}
+        onChange={(value) => handleChange("date", value)}
+      />
+      <Select
+        label="Time"
+        placeholder="Select time"
+        value={formData.time}
+        validationMessage={formErrors.time}
+        onChange={(value) => handleChange("time", value)}
+        options={generateTimeOptions()}
+      />
+      <Select
+        label="Duration"
+        value={formData.duration}
+        validationMessage={formErrors.duration}
+        onChange={(value) => handleChange("duration", value)}
+        options={generateDurationOptions()}
+      />
       <TextArea
         label="Meeting Log"
         name="meetingLog"
@@ -227,7 +255,6 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
         rows={5}
         onChange={(value) => handleChange("description", value)}
       />
-
       <Button variant="primary" onClick={handleLogMeeting}>
         Log meeting
       </Button>
