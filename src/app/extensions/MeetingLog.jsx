@@ -87,6 +87,7 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
   const [contacts, setContacts] = useState([]);
   const [associatedDeals, setAssociatedDeals] = useState([]);
   const [formErrors, setFormErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   let userPayload = null;
   const user = context.user;
@@ -161,6 +162,7 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
     if (Object.keys(errors).length > 0) return;
 
     try {
+      setIsLoading(true);
       const { response } = await runServerless({
         name: "MeetingLog",
         parameters: { ...formData, user: userPayload },
@@ -177,6 +179,7 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
         action: "logMeeting",
         contactId: context.crm.objectId,
       });
+      setIsLoading(false);
       fetchContacts();
     } catch (error) {
       sendAlert({ message: `Error: ${error.message}`, type: "danger" });
@@ -255,8 +258,8 @@ const MeetingLog = ({ context, runServerless, sendAlert }) => {
         rows={5}
         onChange={(value) => handleChange("description", value)}
       />
-      <Button variant="primary" onClick={handleLogMeeting}>
-        Log meeting
+      <Button variant="primary" onClick={handleLogMeeting} disabled={isLoading}>
+        {isLoading ? "Logging..." : "Log Meeting"}
       </Button>
     </Flex>
   );

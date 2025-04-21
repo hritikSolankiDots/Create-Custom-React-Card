@@ -248,7 +248,7 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
     }
 
     const { response } = await runServerless({
-      name: "addLineItem",
+      name: "newAddLineItem",
       parameters: {
         dealId: context?.crm?.objectId,
         departureDateTime,
@@ -390,7 +390,7 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
           {/* Flight Fields */}
           {formValues.productType === "Flight" && (
             <>
-              <Select
+              {/* <Select
                 label="Passenger Type"
                 id="passengerType"
                 options={[
@@ -404,7 +404,84 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
                 onChange={(e) =>
                   setFormValues({ ...formValues, passengerType: e })
                 }
-              />
+              /> */}
+
+              <Flex direction="column" gap="small">
+                <Flex direction="row" gap="small" justify="between">
+                  <NumberInput
+                    label="Number of Adults"
+                    id="adultCount"
+                    placeholder="Enter number of adults"
+                    type="number"
+                    min={0}
+                    value={formValues.adultCount || 0}
+                    onChange={(e) =>
+                      setFormValues({ ...formValues, adultCount: e })
+                    }
+                  />
+                  <NumberInput
+                    label="Adult Unit Price"
+                    id="adultUnitPrice"
+                    placeholder="Enter price per adult"
+                    type="number"
+                    min={0}
+                    value={formValues.adultUnitPrice || 0}
+                    onChange={(e) =>
+                      setFormValues({ ...formValues, adultUnitPrice: e })
+                    }
+                  />
+                </Flex>
+
+                <Flex direction="row" gap="small" justify="between">
+                  <NumberInput
+                    label="Number of Children"
+                    id="childCount"
+                    placeholder="Enter number of children"
+                    type="number"
+                    min={0}
+                    value={formValues.childCount || 0}
+                    onChange={(e) =>
+                      setFormValues({ ...formValues, childCount: e })
+                    }
+                  />
+                  <NumberInput
+                    label="Child Unit Price"
+                    id="childUnitPrice"
+                    placeholder="Enter price per child"
+                    type="number"
+                    min={0}
+                    value={formValues.childUnitPrice || 0}
+                    onChange={(e) =>
+                      setFormValues({ ...formValues, childUnitPrice: e })
+                    }
+                  />
+                </Flex>
+
+                <Flex direction="row" gap="small" justify="between">
+                  <NumberInput
+                    label="Number of Infants"
+                    id="infantCount"
+                    placeholder="Enter number of infants"
+                    type="number"
+                    min={0}
+                    value={formValues.infantCount || 0}
+                    onChange={(e) =>
+                      setFormValues({ ...formValues, infantCount: e })
+                    }
+                  />
+                  <NumberInput
+                    label="Infant Unit Price"
+                    id="infantUnitPrice"
+                    placeholder="Enter price per infant"
+                    type="number"
+                    min={0}
+                    value={formValues.infantUnitPrice || 0}
+                    onChange={(e) =>
+                      setFormValues({ ...formValues, infantUnitPrice: e })
+                    }
+                  />
+                </Flex>
+              </Flex>
               <Select
                 label="Seat Type"
                 id="seatType"
@@ -442,7 +519,6 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
                   setFormValues({ ...formValues, airlineName: e })
                 }
               />
-
               <Input
                 label="Departure Airport"
                 id="departureAirport"

@@ -36,6 +36,7 @@ function combineDateTime(dateValue, timeStr) {
   return dateObj;
 }
 
+
 // Main function to handle incoming requests
 exports.main = async (context = {}) => {
   const HUBSPOT_API_BASE = 'https://api.hubapi.com';
@@ -160,7 +161,6 @@ async function fetchDealsForContact(contactId, ACCESS_TOKEN, HUBSPOT_API_BASE) {
 }
 
 // Log a meeting engagement
-
 async function logMeeting(
   { attendees, outcome, date, time, duration, description, contactId, dealId },
   ACCESS_TOKEN,
@@ -190,44 +190,12 @@ async function logMeeting(
       throw new Error(`Invalid meeting outcome: ${outcome}`);
     }
 
-    // Separate contact ID and owner ID from attendees
-    const contactOwnerId = attendees.find((id) => id != contactId);
-
-    // Build associations to attach the contact ID and deal ID.
-    const associations = [
-      {
-        to: { id: contactId },
-        types: [
-          {
-            associationCategory: "HUBSPOT_DEFINED",
-            associationTypeId: 200, // Association type for contact
-          },
-        ],
-      },
-    ];
-
-    // Add deal association if dealId is provided
-    if (dealId) {
-      associations.push({
-        to: { id: dealId },
-        types: [
-          {
-            associationCategory: "HUBSPOT_DEFINED",
-            associationTypeId: 212, // Association type for deal
-          },
-        ],
-      });
-    }
-
-    // Build the meeting properties following the HubSpot meeting properties.
+    // Build the meeting properties
     const properties = {
       hs_timestamp: String(startTimestamp),
       hs_meeting_title: `Logged by ${user?.firstName} ${user?.lastName}`,
-      hubspot_owner_id: contactOwnerId ? parseInt(contactOwnerId, 10) : null,
+      hubspot_owner_id: attendees.find((id) => id != contactId) || null,
       hs_meeting_body: description || "",
-      hs_internal_meeting_notes: "",
-      hs_meeting_external_url: "",
-      hs_meeting_location: "",
       hs_meeting_start_time: String(startTimestamp),
       hs_meeting_end_time: String(endTimestamp),
       hs_meeting_outcome: mappedOutcome,
@@ -235,7 +203,6 @@ async function logMeeting(
 
     // Prepare the payload for the API request
     const payload = {
-      associations,
       properties,
     };
 
@@ -254,50 +221,62 @@ async function logMeeting(
     // Get the created meeting ID
     const meetingId = response.data.id;
 
-    // Delay the removal of unwanted associations by 30 seconds
-    setTimeout(async () => {
-      await removeUnwantedAssociations(meetingId, ACCESS_TOKEN, HUBSPOT_API_BASE, dealId, contactId);
-    }, 60000); // 60 seconds delay
+    // Associate the meeting with the contact
+    await associateMeetingActivity(
+      contactId,
+      meetingId,
+      "contact",
+      "contact_to_meeting_event",
+      ACCESS_TOKEN,
+      HUBSPOT_API_BASE
+    );
 
-    return "Meeting successfully created!";
+    // Associate the meeting with the deal (if dealId is provided)
+    if (dealId) {
+      await associateMeetingActivity(
+        dealId,
+        meetingId,
+        "deal",
+        "deal_to_meeting_event",
+        ACCESS_TOKEN,
+        HUBSPOT_API_BASE
+      );
+    }
+
+    return "Meeting successfully logged and associated!";
   } catch (error) {
-    console.log("Error creating meeting:", error);
+    console.log("Error logging meeting:", error);
     throw new Error(
       error.response?.data?.message ||
-      "Failed to create meeting. Please check data and try again."
+      "Failed to log meeting. Please check data and try again."
     );
   }
 }
 
-// Helper function to remove unwanted associations
-async function removeUnwantedAssociations(meetingId, ACCESS_TOKEN, HUBSPOT_API_BASE, dealId, contactId) {
+async function associateMeetingActivity(
+  objectId,
+  meetingId,
+  objectType,
+  assocDefinition,
+  ACCESS_TOKEN,
+  HUBSPOT_API_BASE
+) {
   try {
-    const typesToCheck = ['contacts', 'deals', 'companies'];
+    const config = {
+      method: "put",
+      url: `${HUBSPOT_API_BASE}/crm/v3/objects/${objectType}/${objectId}/associations/Meeting/${meetingId}/${assocDefinition}`,
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${ACCESS_TOKEN}`,
+      },
+    };
 
-    for (const toType of typesToCheck) {
-      const { data } = await axios.get(
-        `${HUBSPOT_API_BASE}/crm/v3/objects/meetings/${meetingId}/associations/${toType}`,
-        { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
-      );
-
-      for (const assoc of data.results) {
-        const toObjectType = toType;
-        const toObjectId = assoc.id;
-        const associationType = assoc.type;
-        // Example of filtering by string:
-
-        if (toType == 'contacts' && toObjectId == contactId || toType == 'deals' && toObjectId == dealId) {
-          console.log(`Skipping association: ${associationType}`);
-          continue;
-        } else {
-          const response = await axios.delete(
-            `${HUBSPOT_API_BASE}/crm/v3/objects/meetings/${meetingId}/associations/${toObjectType}/${toObjectId}/${associationType}`,
-            { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
-          );
-        }
-      }
-    }
-  } catch (err) {
-    console.log('Error removing associations:', err);
+    const response = await axios(config);
+    return response.data;
+  } catch (error) {
+    console.log("Error associating meeting:", error);
+    throw new Error(
+      "Failed to associate meeting. Please check data and try again."
+    );
   }
 }
