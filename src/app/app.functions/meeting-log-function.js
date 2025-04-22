@@ -171,8 +171,9 @@ async function logMeeting(
     // Combine date and time safely.
     const parsedDate =
       typeof date === "object" && date.year && date.month && date.date
-        ? new Date(date.year, date.month - 1, date.date)
+        ? new Date(date.year, date.month, date.date)
         : date;
+
     const startDateTime = combineDateTime(parsedDate, time);
     const startTimestamp = startDateTime.getTime();
     const endTimestamp = startTimestamp + parseInt(duration, 10) * 60000;
@@ -192,7 +193,7 @@ async function logMeeting(
 
     // Build the meeting properties
     const properties = {
-      hs_timestamp: String(startTimestamp),
+      hs_timestamp: parsedDate,
       hs_meeting_title: `Logged by ${user?.firstName} ${user?.lastName}`,
       hubspot_owner_id: attendees.find((id) => id != contactId) || null,
       hs_meeting_body: description || "",
