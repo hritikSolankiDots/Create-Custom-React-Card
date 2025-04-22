@@ -82,6 +82,7 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
     let newErrors = {};
@@ -231,7 +232,7 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
-
+    setLoading(true);
     // Combine dates and times only for product types that require them.
     let departureDateTime, arrivalDateTime, pickupDateTime;
     if (formValues.productType === "Flight") {
@@ -264,6 +265,8 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
 
     if (response.success) {
       sendAlert({ message: "Product added successfully!", type: "success" });
+      setLoading(false);
+      // Reset form values
       setFormValues({
         name: "",
         price: 0,
@@ -818,7 +821,7 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
             </>
           )}
 
-          <Button type="submit" onClick={handleSubmit} variant="primary">
+          <Button type="submit" onClick={handleSubmit} variant="primary" disabled={loading}>
             Add Product
           </Button>
         </Flex>
