@@ -11,6 +11,15 @@ import {
   Divider,
 } from "@hubspot/ui-extensions";
 
+const formatDateTime = (dateTimeStr) => {
+  if (!dateTimeStr) return "N/A"; // Handle null or undefined values
+  const date = new Date(dateTimeStr);
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+};
+
 const LineItemsTable = ({ lineItems }) => {
   // Render rows for Flight items
   const renderFlightRows = (flights) => {
@@ -20,11 +29,16 @@ const LineItemsTable = ({ lineItems }) => {
         <TableCell width="min">{item.flight_number}</TableCell>
         <TableCell width="min">{item.departure_airport}</TableCell>
         <TableCell width="min">{item.arrival_airport}</TableCell>
-        <TableCell width="min">{item.departure_date___time}</TableCell>
-        <TableCell width="min">{item.arrival_date___time}</TableCell>
+        <TableCell width="min">
+          {formatDateTime(item.departure_date___time)}
+        </TableCell>
+        <TableCell width="min">
+          {formatDateTime(item.arrival_date___time)}
+        </TableCell>
         <TableCell width="min">{item.passenger_type}</TableCell>
         <TableCell width="min">{item.quantity}</TableCell>
         <TableCell width="min">{item.price}</TableCell>
+        <TableCell width="min">{item.amount}</TableCell>
       </TableRow>
     ));
   };
@@ -40,6 +54,7 @@ const LineItemsTable = ({ lineItems }) => {
         <TableCell width="min">{item.check_out_date}</TableCell>
         <TableCell width="min">{item.quantity}</TableCell>
         <TableCell width="min">{item.price}</TableCell>
+        <TableCell width="min">{item.amount}</TableCell>
       </TableRow>
     ));
   };
@@ -52,12 +67,15 @@ const LineItemsTable = ({ lineItems }) => {
         <TableCell width="min">{item.transport_type}</TableCell>
         <TableCell width="min">{item.pickup_location}</TableCell>
         <TableCell width="min">{item.drop_off_location}</TableCell>
-        <TableCell width="min">{item.pickup_date___time}</TableCell>
+        <TableCell width="min">
+          {formatDateTime(item.pickup_date___time)}
+        </TableCell>
         <TableCell width="min">
           {item.estimated_travel_duration_minutes}
         </TableCell>
         <TableCell width="min">{item.quantity}</TableCell>
         <TableCell width="min">{item.price}</TableCell>
+        <TableCell width="min">{item.amount}</TableCell>
       </TableRow>
     ));
   };
@@ -70,6 +88,13 @@ const LineItemsTable = ({ lineItems }) => {
           <TableCell width="min">
             <Text format={{ fontWeight: "bold" }}>{flights[0].name}</Text>
           </TableCell>
+          <TableCell width="min"></TableCell>
+          <TableCell width="min"></TableCell>
+          <TableCell width="min"></TableCell>
+          <TableCell width="min"></TableCell>
+          <TableCell width="min"></TableCell>
+          <TableCell width="min"></TableCell>
+          <TableCell width="min"></TableCell>
         </TableRow>
         {renderFlightRows(flights)}
       </React.Fragment>
@@ -93,7 +118,8 @@ const LineItemsTable = ({ lineItems }) => {
                 <TableHeader width="min">Arrival Date/Time</TableHeader>
                 <TableHeader width="min">Passenger Type</TableHeader>
                 <TableHeader width="min">Quantity</TableHeader>
-                <TableHeader width="min">Price</TableHeader>
+                <TableHeader width="min">Unit Price</TableHeader>
+                <TableHeader width="min">Amount</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>{renderFlightGroups(lineItems.Flight)}</TableBody>
@@ -115,7 +141,8 @@ const LineItemsTable = ({ lineItems }) => {
                 <TableHeader width="min">Check-In Date</TableHeader>
                 <TableHeader width="min">Check-Out Date</TableHeader>
                 <TableHeader width="min">Quantity</TableHeader>
-                <TableHeader width="min">Price</TableHeader>
+                <TableHeader width="min">Unit Price</TableHeader>
+                <TableHeader width="min">Amount</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>{renderHotelRows(lineItems.Hotel)}</TableBody>
@@ -138,7 +165,8 @@ const LineItemsTable = ({ lineItems }) => {
                 <TableHeader width="min">Pickup Time</TableHeader>
                 <TableHeader width="min">Travel Duration (mins)</TableHeader>
                 <TableHeader width="min">Quantity</TableHeader>
-                <TableHeader width="min">Price</TableHeader>
+                <TableHeader width="min">Unit Price</TableHeader>
+                <TableHeader width="min">Amount</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>{renderTransportRows(lineItems.Transport)}</TableBody>
