@@ -1,9 +1,18 @@
-import React, { useState } from "react";
-import { Button, Divider, Form, Flex, hubspot } from "@hubspot/ui-extensions";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Divider,
+  Form,
+  Flex,
+  hubspot,
+  Text,
+  Heading,
+} from "@hubspot/ui-extensions";
 import CommonFields from "./components/CommonFields";
 import FlightFields from "./components/FlightFields";
 import HotelFields from "./components/HotelFields";
 import TransportFields from "./components/TransportFields";
+import LineItemsTable from "./components/LineItemsTable";
 
 const validateTime = (timeStr) => {
   const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -76,6 +85,40 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loadingTable, setLoadingTable] = useState(false);
+  const [lineItems, setLineItems] = useState([]); // State to store retrieved line items
+
+  // Fetch line items associated with the deal
+  // Fetch line items associated with the deal
+  const fetchLineItems = async () => {
+    setLoadingTable(true);
+    try {
+      const { response } = await runServerless({
+        name: "getLineItems", // Name of the serverless function
+        parameters: {
+          dealId: context?.crm?.objectId, // Pass the deal ID from the context
+        },
+      });
+
+      if (response.success) {
+        setLineItems(response.data); // Store the grouped line items
+      } else {
+        sendAlert({ message: "Failed to retrieve line items", type: "danger" });
+      }
+    } catch (error) {
+      console.error("Error fetching line items:", error);
+      sendAlert({
+        message: "An error occurred while fetching line items",
+        type: "danger",
+      });
+    } finally {
+      setLoadingTable(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLineItems(); // Fetch line items when the component mounts
+  }, []);
 
   const validateForm = () => {
     let newErrors = {};
@@ -225,92 +268,132 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
+
     setLoading(true);
-    // Combine dates and times only for product types that require them.
-    let departureDateTime, arrivalDateTime, pickupDateTime;
-    if (formValues.productType === "Flight") {
-      departureDateTime = combineDateTime(
-        formValues.departureDate,
-        formValues.departureTime
-      );
-      arrivalDateTime = combineDateTime(
-        formValues.arrivalDate,
-        formValues.arrivalTime
-      );
-    }
-    if (formValues.productType === "Transport") {
-      pickupDateTime = combineDateTime(
-        formValues.pickupDate,
-        formValues.pickupTime
-      );
-    }
 
-    const { response } = await runServerless({
-      name: "newAddLineItem",
-      parameters: {
-        dealId: context?.crm?.objectId,
-        departureDateTime,
-        arrivalDateTime,
-        pickupDateTime,
-        ...formValues,
-      },
-    });
+    try {
+      // Combine dates and times only for product types that require them.
+      let departureDateTime, arrivalDateTime, pickupDateTime;
 
-    if (response.success) {
-      sendAlert({ message: "Product added successfully!", type: "success" });
-      setLoading(false);
-      // Reset form values
-      setFormValues({
-        name: "",
-        price: 0,
+      if (formValues.productType === "Flight") {
+        departureDateTime = combineDateTime(
+          formValues.departureDate,
+          formValues.departureTime
+        );
+        arrivalDateTime = combineDateTime(
+          formValues.arrivalDate,
+          formValues.arrivalTime
+        );
+      }
 
-        // Reset Flight fields
-        flightNumber: "",
-        airlineName: "",
-        departureAirport: "",
-        arrivalAirport: "",
-        departureDate: null,
-        arrivalDate: null,
-        departureTime: "",
-        arrivalTime: "",
-        seatType: "",
-        passengerType: "",
-        flightAdditionalNotes: "",
-        adultCount: 1,
-        adultUnitPrice: 0,
-        childCount: 0,
-        childUnitPrice: 0,
-        infantCount: 0,
-        infantUnitPrice: 0,
+      if (formValues.productType === "Transport") {
+        pickupDateTime = combineDateTime(
+          formValues.pickupDate,
+          formValues.pickupTime
+        );
+      }
 
-        // Reset Hotel fields
-        hotelName: "",
-        hotelAddress: "",
-        checkInDate: null,
-        checkOutDate: null,
-        roomType: "",
-        amenities: null,
-        roomCount: 1,
-        roomUnitPrice: 0,
-
-        // Reset Transport fields
-        transportType: "",
-        pickupLocation: "",
-        transportDropOff: "",
-        vehicleDetails: "",
-        estimatedTravelDuration: "",
-        pickupDate: null,
-        pickupTime: "",
-        vehicleCount: 1,
-        vehicleUnitPrice: 0,
+      const { response } = await runServerless({
+        name: "newAddLineItem",
+        parameters: {
+          dealId: context?.crm?.objectId,
+          departureDateTime,
+          arrivalDateTime,
+          pickupDateTime,
+          ...formValues,
+        },
       });
-    } else {
-      sendAlert({ message: "Failed to add product", type: "danger" });
+
+      if (response.success) {
+        sendAlert({ message: "Product added successfully!", type: "success" });
+
+        // Reset form values
+        setFormValues({
+          name: "",
+          price: 0,
+
+          // Reset Flight fields
+          flightNumber: "",
+          airlineName: "",
+          departureAirport: "",
+          arrivalAirport: "",
+          departureDate: null,
+          arrivalDate: null,
+          departureTime: "",
+          arrivalTime: "",
+          seatType: "",
+          passengerType: "",
+          flightAdditionalNotes: "",
+          adultCount: 1,
+          adultUnitPrice: 0,
+          childCount: 0,
+          childUnitPrice: 0,
+          infantCount: 0,
+          infantUnitPrice: 0,
+
+          // Reset Hotel fields
+          hotelName: "",
+          hotelAddress: "",
+          checkInDate: null,
+          checkOutDate: null,
+          roomType: "",
+          amenities: null,
+          roomCount: 1,
+          roomUnitPrice: 0,
+
+          // Reset Transport fields
+          transportType: "",
+          pickupLocation: "",
+          transportDropOff: "",
+          vehicleDetails: "",
+          estimatedTravelDuration: "",
+          pickupDate: null,
+          pickupTime: "",
+          vehicleCount: 1,
+          vehicleUnitPrice: 0,
+        });
+
+        // Refresh the line items table
+        fetchLineItems();
+      } else {
+        sendAlert({ message: "Failed to add product", type: "danger" });
+      }
+    } catch (error) {
+      console.error("Error adding product:", error);
+      sendAlert({
+        message: "An unexpected error occurred while adding the product.",
+        type: "danger",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <>
+      {/* {lineItems && Object.keys(lineItems).length > 0 && ( */}
+      <>
+        <Flex direction="column" gap="small">
+          {loadingTable ? (
+            <Text format={{ fontWeight: "bold" }}>Loading...</Text>
+          ) : lineItems && Object.keys(lineItems).length > 0 ? (
+            <LineItemsTable lineItems={lineItems} />
+          ) : (
+            <Text format={{ fontWeight: "bold" }}>No line items found</Text>
+          )}
+          <Divider />
+          <Button
+            onClick={fetchLineItems}
+            variant="primary"
+            disabled={loadingTable}
+          >
+            Refresh Line Items
+          </Button>
+        </Flex>
+        <Divider distance="large" />
+      </>
+      {/* )} */}
+      <Heading>Add Line Item</Heading>
       <Form>
         <Flex direction="column" gap="small">
           <CommonFields

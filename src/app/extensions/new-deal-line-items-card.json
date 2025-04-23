@@ -1,13 +1,16 @@
 {
-    "type": "crm-card",
-    "data": {
-      "title": "Create Line Item(New)",
-      "uid": "new_deal_line_items_card",
-      "location": "crm.record.tab",
-      "module": {
-        "file": "NewDealLineItems.jsx"
-      },
-      "objectTypes": [{ "name": "deals" }]
-    }
+  "type": "crm-card",
+  "data": {
+    "title": "Deal Line Items",
+    "uid": "new_deal_line_items_card",
+    "location": "crm.record.tab",
+    "module": {
+      "file": "NewDealLineItems.jsx"
+    },
+    "objectTypes": [
+      {
+        "name": "deals"
+      }
+    ]
   }
-  
+}

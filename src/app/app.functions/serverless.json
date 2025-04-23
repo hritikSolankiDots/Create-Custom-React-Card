@@ -12,7 +12,11 @@
       "file": "new-add-line-item-function.js",
       "secrets": []
     },
-    "MeetingLog": { 
+    "getLineItems": {
+      "file": "get-deal-line-items-function.js",
+      "secrets": []
+    },
+    "MeetingLog": {
       "file": "meeting-log-function.js",
       "secrets": []
     }

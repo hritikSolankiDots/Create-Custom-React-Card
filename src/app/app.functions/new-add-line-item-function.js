@@ -1,5 +1,9 @@
 const axios = require("axios");
 
+const generateUniqueId = () => {
+  return `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+};
+
 function toUTCMidnightTimestamp(dateStr) {
   const [month, day, year] = dateStr.split('/').map(Number);
   const utcDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
@@ -128,6 +132,8 @@ exports.main = async (context = {}) => {
       { type: "Infant", count: infantCount, unitPrice: infantUnitPrice },
     ];
 
+    const flightGroupId = generateUniqueId();
+
     for (const passenger of passengerTypes) {
       if (passenger.count > 0) {
         const lineItemProperties = {
@@ -144,6 +150,7 @@ exports.main = async (context = {}) => {
           passenger_type: passenger.type,
           quantity: passenger.count,
           price: passenger.unitPrice,
+          flight_group_id: flightGroupId,
         };
 
         await createLineItem(lineItemProperties, dealId, HUBSPOT_PRIVATE_APP_TOKEN);
