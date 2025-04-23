@@ -1,16 +1,5 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Divider,
-  Form,
-  Input,
-  NumberInput,
-  Flex,
-  hubspot,
-  Select,
-  DateInput,
-  MultiSelect,
-} from "@hubspot/ui-extensions";
+import { Button, Divider, Form, Flex, hubspot } from "@hubspot/ui-extensions";
 import CommonFields from "./components/CommonFields";
 import FlightFields from "./components/FlightFields";
 import HotelFields from "./components/HotelFields";
@@ -319,7 +308,6 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
       sendAlert({ message: "Failed to add product", type: "danger" });
     }
   };
-
 
   return (
     <>
