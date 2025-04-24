@@ -9,6 +9,12 @@ import {
   Heading,
   Text,
   Divider,
+  Icon,
+  Button,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  Flex,
 } from "@hubspot/ui-extensions";
 
 const formatDateTime = (dateTimeStr) => {
@@ -20,7 +26,76 @@ const formatDateTime = (dateTimeStr) => {
   }).format(date);
 };
 
-const LineItemsTable = ({ lineItems }) => {
+const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
+  const renderDeleteButton = (item, isFlightGroup = false) => {
+    // Create modal ID
+    const modalId = `delete-modal-${
+      isFlightGroup ? item[0].flight_group_id : item.hs_object_id
+    }`;
+
+    return (
+      <Button
+        variant="destructive"
+        size="sm"
+        overlay={
+          <Modal
+            id={modalId}
+            title="Confirm Delete"
+            variant="danger"
+            width="md"
+          >
+            <ModalBody>
+              {isFlightGroup ? (
+                <>
+                  <Text>
+                    Are you sure you want to delete this flight group?
+                  </Text>
+                  <Text format={{ fontWeight: "bold" }}>{item[0].name}</Text>
+                  <Divider />
+                  <Text>This will delete the following bookings:</Text>
+                  {item.map((flight) => (
+                    <Text key={flight.hs_object_id}>
+                      • {flight.passenger_type} - {flight.quantity} x $
+                      {flight.price}
+                    </Text>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <Text>
+                    Are you sure you want to delete this {item.hs_product_type}{" "}
+                    line item?
+                  </Text>
+                  <Text format={{ fontWeight: "bold" }}>{item.name}</Text>
+                </>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Flex justify="end" gap="small">
+                <Button
+                  variant="secondary"
+                  onClick={() => actions.closeOverlay(modalId)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    handleDeleteLineItem(isFlightGroup ? item : [item]);
+                    actions.closeOverlay(modalId);
+                  }}
+                >
+                  Delete
+                </Button>
+              </Flex>
+            </ModalFooter>
+          </Modal>
+        }
+      >
+        <Icon name="delete" />
+      </Button>
+    );
+  };
   // Render rows for Flight items
   const renderFlightRows = (flights) => {
     return flights.map((item, index) => (
@@ -55,6 +130,7 @@ const LineItemsTable = ({ lineItems }) => {
         <TableCell width="min">{item.quantity}</TableCell>
         <TableCell width="min">{item.price}</TableCell>
         <TableCell width="min">{item.amount}</TableCell>
+        <TableCell width="min">{renderDeleteButton(item)}</TableCell>
       </TableRow>
     ));
   };
@@ -76,6 +152,7 @@ const LineItemsTable = ({ lineItems }) => {
         <TableCell width="min">{item.quantity}</TableCell>
         <TableCell width="min">{item.price}</TableCell>
         <TableCell width="min">{item.amount}</TableCell>
+        <TableCell width="min">{renderDeleteButton(item)}</TableCell>
       </TableRow>
     ));
   };
@@ -88,7 +165,7 @@ const LineItemsTable = ({ lineItems }) => {
           <TableCell width="min">
             <Text format={{ fontWeight: "bold" }}>{flights[0].name}</Text>
           </TableCell>
-          <TableCell width="min"></TableCell>
+          <TableCell width="min">{renderDeleteButton(flights, true)}</TableCell>
           <TableCell width="min"></TableCell>
           <TableCell width="min"></TableCell>
           <TableCell width="min"></TableCell>
@@ -143,6 +220,7 @@ const LineItemsTable = ({ lineItems }) => {
                 <TableHeader width="min">Quantity</TableHeader>
                 <TableHeader width="min">Unit Price</TableHeader>
                 <TableHeader width="min">Amount</TableHeader>
+                <TableHeader width="min">Action</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>{renderHotelRows(lineItems.Hotel)}</TableBody>
@@ -167,6 +245,7 @@ const LineItemsTable = ({ lineItems }) => {
                 <TableHeader width="min">Quantity</TableHeader>
                 <TableHeader width="min">Unit Price</TableHeader>
                 <TableHeader width="min">Amount</TableHeader>
+                <TableHeader width="min">Action</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>{renderTransportRows(lineItems.Transport)}</TableBody>

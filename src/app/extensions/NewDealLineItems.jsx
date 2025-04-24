@@ -34,10 +34,11 @@ hubspot.extend(({ context, runServerlessFunction, actions }) => (
     context={context}
     runServerless={runServerlessFunction}
     sendAlert={actions.addAlert}
+    actions={actions}
   />
 ));
 
-const AddProductUI = ({ context, runServerless, sendAlert }) => {
+const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
   const [formValues, setFormValues] = useState({
     name: "",
     productType: "",
@@ -88,7 +89,6 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
   const [loadingTable, setLoadingTable] = useState(false);
   const [lineItems, setLineItems] = useState([]); // State to store retrieved line items
 
-  // Fetch line items associated with the deal
   // Fetch line items associated with the deal
   const fetchLineItems = async () => {
     setLoadingTable(true);
@@ -369,6 +369,41 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
     }
   };
 
+  // Add this new function inside AddProductUI component
+  const handleDeleteLineItem = async (items) => {
+    try {
+      const { response } = await runServerless({
+        name: "deleteLineItems",
+        parameters: {
+          dealId: context?.crm?.objectId,
+          lineItems: items,
+          isFlightGroup:
+            items.length > 1 && items[0].hs_product_type === "Flight",
+          productType: items[0].hs_product_type,
+        },
+      });
+
+      if (response.success) {
+        sendAlert({
+          message: response.message,
+          type: "success",
+        });
+        fetchLineItems();
+      } else {
+        sendAlert({
+          message: response.message || "Failed to delete items",
+          type: "danger",
+        });
+      }
+    } catch (error) {
+      console.log("Error deleting line item(s):", error);
+      sendAlert({
+        message: "An unexpected error occurred while deleting the item(s).",
+        type: "danger",
+      });
+    }
+  };
+
   return (
     <>
       {/* {lineItems && Object.keys(lineItems).length > 0 && ( */}
@@ -377,18 +412,22 @@ const AddProductUI = ({ context, runServerless, sendAlert }) => {
           {loadingTable ? (
             <Text format={{ fontWeight: "bold" }}>Loading...</Text>
           ) : lineItems && Object.keys(lineItems).length > 0 ? (
-            <LineItemsTable lineItems={lineItems} />
+            <LineItemsTable
+              lineItems={lineItems}
+              handleDeleteLineItem={handleDeleteLineItem}
+              actions={actions}
+            />
           ) : (
             <Text format={{ fontWeight: "bold" }}>No line items found</Text>
           )}
-          <Divider />
-          <Button
+          {/* <Divider /> */}
+          {/* <Button
             onClick={fetchLineItems}
             variant="primary"
             disabled={loadingTable}
           >
             Refresh Line Items
-          </Button>
+          </Button> */}
         </Flex>
         <Divider distance="large" />
       </>

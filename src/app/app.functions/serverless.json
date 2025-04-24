@@ -16,6 +16,10 @@
       "file": "get-deal-line-items-function.js",
       "secrets": []
     },
+    "deleteLineItems": {
+      "file": "delete-line-items-function.js",
+      "secrets": []
+    },
     "MeetingLog": {
       "file": "meeting-log-function.js",
       "secrets": []
