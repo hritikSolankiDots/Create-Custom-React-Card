@@ -177,18 +177,31 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
       if (!formValues.seatType) newErrors.seatType = "Seat type is required";
 
       // Validate passenger counts and unit prices
-      if (formValues.adultCount < 1)
+      if (formValues.adultCount < 1) {
         newErrors.adultCount = "At least one adult is required";
-      if (formValues.adultUnitPrice < 0)
-        newErrors.adultUnitPrice = "Adult unit price must be non-negative";
-      if (formValues.childCount < 0)
+      }
+
+      // Adult price must always be greater than 0
+      if (formValues.adultUnitPrice <= 0) {
+        newErrors.adultUnitPrice = "Adult unit price must be greater than 0";
+      }
+
+      // Child validations - only if there are children
+      if (formValues.childCount < 0) {
         newErrors.childCount = "Child count cannot be negative";
-      if (formValues.childUnitPrice < 0)
-        newErrors.childUnitPrice = "Child unit price must be non-negative";
-      if (formValues.infantCount < 0)
+      } else if (formValues.childCount > 0 && formValues.childUnitPrice <= 0) {
+        newErrors.childUnitPrice = "Child unit price must be greater than 0";
+      }
+
+      // Infant validations - only if there are infants
+      if (formValues.infantCount < 0) {
         newErrors.infantCount = "Infant count cannot be negative";
-      if (formValues.infantUnitPrice < 0)
-        newErrors.infantUnitPrice = "Infant unit price must be non-negative";
+      } else if (
+        formValues.infantCount > 0 &&
+        formValues.infantUnitPrice <= 0
+      ) {
+        newErrors.infantUnitPrice = "Infant unit price must be greater than 0";
+      }
     }
 
     // Validate Hotel fields if productType is Hotel
@@ -219,10 +232,12 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
       if (!formValues.roomType) newErrors.roomType = "Room type is required";
 
       // Validate room count and unit price
-      if (formValues.roomCount < 1)
+      if (formValues.roomCount < 1) {
         newErrors.roomCount = "At least one room is required";
-      if (formValues.roomUnitPrice < 0)
-        newErrors.roomUnitPrice = "Room unit price must be non-negative";
+      }
+      if (formValues.roomUnitPrice <= 0) {
+        newErrors.roomUnitPrice = "Room unit price must be greater than 0";
+      }
     }
 
     // Validate Transport fields if productType is Transport
@@ -256,10 +271,14 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
         newErrors.vehicleDetails = "Vehicle details are required";
 
       // Validate vehicle count and unit price
-      if (formValues.vehicleCount < 1)
+      // Vehicle count and price validations
+      if (formValues.vehicleCount < 1) {
         newErrors.vehicleCount = "At least one vehicle is required";
-      if (formValues.vehicleUnitPrice < 0)
-        newErrors.vehicleUnitPrice = "Vehicle unit price must be non-negative";
+      }
+      if (formValues.vehicleUnitPrice <= 0) {
+        newErrors.vehicleUnitPrice =
+          "Vehicle unit price must be greater than 0";
+      }
     }
 
     setErrors(newErrors);

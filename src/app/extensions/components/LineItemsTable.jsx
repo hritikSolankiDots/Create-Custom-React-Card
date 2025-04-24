@@ -96,11 +96,25 @@ const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
       </Button>
     );
   };
+
   // Render rows for Flight items
+  const passengerTypeOrder = {
+    Adult: 1,
+    Children: 2,
+    Infant: 3,
+  };
+
+  // Update the renderFlightRows function
   const renderFlightRows = (flights) => {
-    return flights.map((item, index) => (
+    // Sort flights based on passenger type
+    const sortedFlights = [...flights].sort(
+      (a, b) =>
+        passengerTypeOrder[a.passenger_type] -
+        passengerTypeOrder[b.passenger_type]
+    );
+
+    return sortedFlights.map((item, index) => (
       <TableRow key={item.hs_object_id || index}>
-        {/* <TableCell width="min">{item.name}</TableCell> */}
         <TableCell width="min">{item.flight_number}</TableCell>
         <TableCell width="min">{item.departure_airport}</TableCell>
         <TableCell width="min">{item.arrival_airport}</TableCell>
@@ -165,7 +179,9 @@ const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
           <TableCell width="min">
             <Text format={{ fontWeight: "bold" }}>{flights[0].name}</Text>
           </TableCell>
-          <TableCell width="min">{renderDeleteButton(flights, true)}</TableCell>
+          <TableCell width="min">
+            <Text>{renderDeleteButton(flights, true)}</Text>
+          </TableCell>
           <TableCell width="min"></TableCell>
           <TableCell width="min"></TableCell>
           <TableCell width="min"></TableCell>
