@@ -14,10 +14,12 @@ const CommonFields = ({ formValues, setFormValues, errors }) => {
         label="Product Type"
         id="productType"
         options={[
+          { label: "Select Product Type", value: "" },
           { label: "Flight", value: "Flight" },
           { label: "Hotel", value: "Hotel" },
           { label: "Transport", value: "Transport" },
         ]}
+        placeholder="Select Product Type"
         value={formValues.productType}
         error={!!errors.productType}
         validationMessage={errors.productType}
