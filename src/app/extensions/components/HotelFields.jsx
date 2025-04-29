@@ -1,5 +1,12 @@
 import React from "react";
-import { Input, NumberInput, DateInput, Flex, MultiSelect, Select } from "@hubspot/ui-extensions";
+import {
+  Input,
+  NumberInput,
+  DateInput,
+  Flex,
+  MultiSelect,
+  Select,
+} from "@hubspot/ui-extensions";
 
 const HotelFields = ({ formValues, setFormValues, errors }) => {
   return (
@@ -10,6 +17,7 @@ const HotelFields = ({ formValues, setFormValues, errors }) => {
         value={formValues.hotelName}
         error={!!errors.hotelName}
         validationMessage={errors.hotelName}
+        placeholder="Enter hotel name"
         onChange={(e) => setFormValues({ ...formValues, hotelName: e })}
       />
       <Input
@@ -18,6 +26,7 @@ const HotelFields = ({ formValues, setFormValues, errors }) => {
         value={formValues.hotelAddress}
         error={!!errors.hotelAddress}
         validationMessage={errors.hotelAddress}
+        placeholder="Enter hotel address"
         onChange={(e) => setFormValues({ ...formValues, hotelAddress: e })}
       />
       <Flex direction="row" gap="small" justify="between">
@@ -38,19 +47,31 @@ const HotelFields = ({ formValues, setFormValues, errors }) => {
           onChange={(e) => setFormValues({ ...formValues, checkOutDate: e })}
         />
       </Flex>
-      <Select
-        label="Room Type"
-        id="roomType"
-        options={[
-          { label: "Standard", value: "Standard" },
-          { label: "Deluxe", value: "Deluxe" },
-          { label: "Suite", value: "Suite" },
-        ]}
-        value={formValues.roomType}
-        error={!!errors.roomType}
-        validationMessage={errors.roomType}
-        onChange={(e) => setFormValues({ ...formValues, roomType: e })}
-      />
+      <Flex direction="row" gap="small" justify="between">
+        <Select
+          label="Room Type"
+          id="roomType"
+          options={[
+            { label: "Standard", value: "Standard" },
+            { label: "Deluxe", value: "Deluxe" },
+            { label: "Suite", value: "Suite" },
+          ]}
+          value={formValues.roomType}
+          error={!!errors.roomType}
+          validationMessage={errors.roomType}
+          placeholder="Select room type"
+          onChange={(e) => setFormValues({ ...formValues, roomType: e })}
+        />
+        <NumberInput
+          label="Number of Guests"
+          id="numberOfGuests"
+          value={formValues.numberOfGuests}
+          error={!!errors.numberOfGuests}
+          validationMessage={errors.numberOfGuests}
+          placeholder="Enter number of guests"
+          onChange={(e) => setFormValues({ ...formValues, numberOfGuests: e })}
+        />
+      </Flex>
       <MultiSelect
         label="Amenities"
         id="amenities"
@@ -60,6 +81,7 @@ const HotelFields = ({ formValues, setFormValues, errors }) => {
           { label: "Parking", value: "Parking" },
         ]}
         value={formValues.amenities}
+        placeholder="Select amenities"
         onChange={(e) => setFormValues({ ...formValues, amenities: e })}
       />
       <Flex direction="row" gap="small" justify="between">
@@ -69,6 +91,7 @@ const HotelFields = ({ formValues, setFormValues, errors }) => {
           value={formValues.roomCount}
           error={!!errors.roomCount}
           validationMessage={errors.roomCount}
+          placeholder="Enter number of rooms"
           onChange={(e) => setFormValues({ ...formValues, roomCount: e })}
         />
         <NumberInput
@@ -77,6 +100,7 @@ const HotelFields = ({ formValues, setFormValues, errors }) => {
           value={formValues.roomUnitPrice}
           error={!!errors.roomUnitPrice}
           validationMessage={errors.roomUnitPrice}
+          placeholder="Enter room unit price"
           onChange={(e) => setFormValues({ ...formValues, roomUnitPrice: e })}
         />
       </Flex>

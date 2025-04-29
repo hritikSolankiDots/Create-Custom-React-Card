@@ -34,7 +34,9 @@ const getLineItemDetails = async (lineItemId, HUBSPOT_PRIVATE_APP_TOKEN) => {
       "hs_lastmodifieddate",
       "hs_object_id",
       "hs_product_id",
-      "flight_group_id"
+      "flight_group_id",
+      "number_of_passengers_transport",
+      "number_of_guests",
     ];
 
     const response = await axios.get(

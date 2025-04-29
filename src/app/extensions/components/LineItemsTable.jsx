@@ -139,6 +139,7 @@ const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
         <TableCell width="min">{item.name}</TableCell>
         <TableCell width="min">{item.hotel_name}</TableCell>
         <TableCell width="min">{item.room_type}</TableCell>
+        <TableCell width="min">{item.number_of_guests}</TableCell>
         <TableCell width="min">
           {item.additional_amenities?.split(";").join(", ")}
         </TableCell>
@@ -160,6 +161,7 @@ const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
         <TableCell width="min">{item.transport_type}</TableCell>
         <TableCell width="min">{item.pickup_location}</TableCell>
         <TableCell width="min">{item.drop_off_location}</TableCell>
+        <TableCell width="min">{item.number_of_passengers_transport}</TableCell>
         <TableCell width="min">
           {formatDateTime(item.pickup_date___time)}
         </TableCell>
@@ -234,6 +236,7 @@ const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
                 <TableHeader width="min">Name</TableHeader>
                 <TableHeader width="min">Hotel Name</TableHeader>
                 <TableHeader width="min">Room Type</TableHeader>
+                <TableHeader width="min">Number of Guests</TableHeader>
                 <TableHeader width="min">Amenities</TableHeader>
                 <TableHeader width="min">Check-In Date</TableHeader>
                 <TableHeader width="min">Check-Out Date</TableHeader>
@@ -260,6 +263,7 @@ const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
                 <TableHeader width="min">Transport Type</TableHeader>
                 <TableHeader width="min">Pickup Location</TableHeader>
                 <TableHeader width="min">Drop-Off Location</TableHeader>
+                <TableHeader width="min">Number of Passengers</TableHeader>
                 <TableHeader width="min">Pickup Time</TableHeader>
                 <TableHeader width="min">Travel Duration (mins)</TableHeader>
                 <TableHeader width="min">Quantity</TableHeader>

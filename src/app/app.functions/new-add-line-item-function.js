@@ -75,6 +75,7 @@ exports.main = async (context = {}) => {
     amenities,
     roomCount,
     roomUnitPrice,
+    numberOfGuests,
 
     // Transport fields
     transportType,
@@ -85,6 +86,7 @@ exports.main = async (context = {}) => {
     pickupDateTime,
     vehicleCount,
     vehicleUnitPrice,
+    passengerCount
   } = context.parameters;
 
   // Basic common validation
@@ -181,6 +183,7 @@ exports.main = async (context = {}) => {
         room_type: roomType,
         quantity: roomCount,
         price: roomUnitPrice,
+        number_of_guests: numberOfGuests,
         additional_amenities: validAmenities.join(';'),
       };
 
@@ -202,6 +205,7 @@ exports.main = async (context = {}) => {
         pickup_date___time: pickupDateTime,
         quantity: vehicleCount,
         price: vehicleUnitPrice,
+        number_of_passengers_transport: passengerCount,
       };
 
       await createLineItem(lineItemProperties, dealId, HUBSPOT_PRIVATE_APP_TOKEN);

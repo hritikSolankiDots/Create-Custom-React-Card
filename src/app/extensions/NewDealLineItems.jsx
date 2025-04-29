@@ -71,6 +71,7 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
     amenities: null,
     roomCount: 1,
     roomUnitPrice: 0,
+    numberOfGuests: 1,
 
     // Transport fields
     transportType: "",
@@ -82,6 +83,7 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
     pickupTime: "",
     vehicleCount: 1,
     vehicleUnitPrice: 0,
+    passengerCount: 1,
   });
 
   const [errors, setErrors] = useState({});
@@ -238,6 +240,9 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
       if (formValues.roomUnitPrice <= 0) {
         newErrors.roomUnitPrice = "Room unit price must be greater than 0";
       }
+      if (formValues.numberOfGuests < 1) {
+        newErrors.numberOfGuests = "At least one guest is required";
+      }
     }
 
     // Validate Transport fields if productType is Transport
@@ -278,6 +283,9 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
       if (formValues.vehicleUnitPrice <= 0) {
         newErrors.vehicleUnitPrice =
           "Vehicle unit price must be greater than 0";
+      }
+      if (formValues.passengerCount < 1) {
+        newErrors.passengerCount = "At least one passenger is required";
       }
     }
 
@@ -359,6 +367,7 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
           amenities: null,
           roomCount: 1,
           roomUnitPrice: 0,
+          numberOfGuests: 1,
 
           // Reset Transport fields
           transportType: "",
@@ -370,6 +379,7 @@ const AddProductUI = ({ context, runServerless, sendAlert, actions }) => {
           pickupTime: "",
           vehicleCount: 1,
           vehicleUnitPrice: 0,
+          passengerCount: 1,
         });
 
         // Refresh the line items table
