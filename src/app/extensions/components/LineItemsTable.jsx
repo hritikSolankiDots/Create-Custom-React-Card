@@ -139,6 +139,9 @@ const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
         <TableCell width="min">{item.name}</TableCell>
         <TableCell width="min">{item.hotel_name}</TableCell>
         <TableCell width="min">{item.room_type}</TableCell>
+        <TableCell width="min">
+          {item.additional_amenities?.split(";").join(", ")}
+        </TableCell>
         <TableCell width="min">{item.check_in_date}</TableCell>
         <TableCell width="min">{item.check_out_date}</TableCell>
         <TableCell width="min">{item.quantity}</TableCell>
@@ -231,6 +234,7 @@ const LineItemsTable = ({ lineItems, handleDeleteLineItem, actions }) => {
                 <TableHeader width="min">Name</TableHeader>
                 <TableHeader width="min">Hotel Name</TableHeader>
                 <TableHeader width="min">Room Type</TableHeader>
+                <TableHeader width="min">Amenities</TableHeader>
                 <TableHeader width="min">Check-In Date</TableHeader>
                 <TableHeader width="min">Check-Out Date</TableHeader>
                 <TableHeader width="min">Quantity</TableHeader>

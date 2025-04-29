@@ -160,6 +160,16 @@ exports.main = async (context = {}) => {
 
   // Handle Hotel product type
   if (productType === "Hotel") {
+    const amenityMap = {
+      'Breakfast': 'breakfast',
+      'WiFi': 'Wi-Fi',
+      'Parking': 'parking',
+    };
+
+    const validAmenities = Array.isArray(amenities)
+      ? amenities.map(a => amenityMap[a]).filter(Boolean)
+      : amenityMap[amenities] ? [amenityMap[amenities]] : [];
+
     if (roomCount > 0) {
       const lineItemProperties = {
         name: `${name} - ${roomType}`,
@@ -171,6 +181,7 @@ exports.main = async (context = {}) => {
         room_type: roomType,
         quantity: roomCount,
         price: roomUnitPrice,
+        additional_amenities: validAmenities.join(';'),
       };
 
       await createLineItem(lineItemProperties, dealId, HUBSPOT_PRIVATE_APP_TOKEN);

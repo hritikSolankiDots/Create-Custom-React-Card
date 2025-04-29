@@ -22,6 +22,7 @@ const getLineItemDetails = async (lineItemId, HUBSPOT_PRIVATE_APP_TOKEN) => {
       "check_in_date",
       "check_out_date",
       "room_type",
+      "additional_amenities",
       "amount",
       "transport_type",
       "pickup_location",
